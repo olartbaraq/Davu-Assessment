@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Airflow DAG Creator</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <h1>Airflow DAG Creator</h1>
+    <form id="dagForm">
+      <label for="dag_id">DAG ID:</label>
+      <input type="text" id="dag_id" name="dag_id" required /><br /><br />
+
+      <label for="dag_run_id">DAG Run ID:</label>
+      <input
+        type="text"
+        id="dag_run_id"
+        name="dag_run_id"
+        required
+      /><br /><br />
+
+      <label>Configuration:</label><br />
+      <div id="confContainer">
+        <div class="conf-pair">
+          <input type="text" class="conf-key" placeholder="Key" />
+          <input type="text" class="conf-value" placeholder="Value" />
+          <button type="button" class="remove-pair">Remove</button>
+        </div>
+      </div>
+      <button type="button" id="addConfPair">Add Configuration</button
+      ><br /><br />
+
+      <button type="submit">Create DAG</button>
+    </form>
+    <div id="result"></div>
+
+    <style>
+      .conf-pair {
+        margin: 5px 0;
+      }
+      .conf-pair input {
+        margin-right: 5px;
+      }
+      .remove-pair {
+        margin-left: 5px;
+      }
+    </style>
+
+    <script>
+      document
+        .getElementById("addConfPair")
+        .addEventListener("click", function () {
+          const pair = document.createElement("div");
+          pair.className = "conf-pair";
+          pair.innerHTML = `
+          <input type="text" class="conf-key" placeholder="Key" />
+          <input type="text" class="conf-value" placeholder="Value" />
+          <button type="button" class="remove-pair">Remove</button>
+        `;
+          document.getElementById("confContainer").appendChild(pair);
+        });
+
+      document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-pair")) {
+          e.target.parentElement.remove();
+        }
+      });
+
+      document
+        .getElementById("dagForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const dag_id = document.getElementById("dag_id").value;
+          const dag_run_id = document.getElementById("dag_run_id").value;
+
+          // Build configuration object from key-value pairs
+          const confObj = {};
+          document.querySelectorAll(".conf-pair").forEach((pair) => {
+            const key = pair.querySelector(".conf-key").value.trim();
+            const value = pair.querySelector(".conf-value").value.trim();
+            if (key) {
+              confObj[key] = value;
+            }
+          });
+
+          axios
+            .post("http://localhost:5000/api/experimental/dags/create_dag", {
+              dag_id: dag_id,
+              dag_run_id: dag_run_id,
+              conf: confObj,
+            })
+            .then(function (response) {
+              document.getElementById(
+                "result"
+              ).innerHTML = `<pre>${JSON.stringify(
+                response.data,
+                null,
+                2
+              )}</pre>`;
+            })
+            .catch(function (error) {
+              document.getElementById(
+                "result"
+              ).innerHTML = `<pre style="color: red">Error: ${error.message}</pre>`;
+            });
+        });
+    </script>
+  </body>
+</html>
