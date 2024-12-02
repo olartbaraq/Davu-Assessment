@@ -20,7 +20,7 @@ A Flask-based web application that provides an interface to create and manage Ap
 1. Clone the repository:
 
 ```bash
-    git clone <repository-url>
+    git clone git@github.com:olartbaraq/Davu-Assessment.git
     cd airflow-dag-creator
 ```
 
